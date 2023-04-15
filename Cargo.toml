@@ -9,14 +9,15 @@ edition = "2021"
 bb8 = "0.8.0"
 bb8-postgres = "0.8.1"
 config = { version = "0.13.3", features = ["toml"] }
+console-subscriber = "0.1.8"
 hex = "0.4.3"
-log = "0.4.17"
-pretty_env_logger = "0.4.0"
 prost = "0.11.8"
 serde = { version = "1.0.159", features = ["derive"] }
-tokio = { version = "1.27.0", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.27.0", features = ["rt-multi-thread", "macros", "full", "tracing"] }
 tokio-postgres = "0.7.8"
 tonic = { version = "0.9.1", features = ["prost"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
 
 [build-dependencies]
 tonic-build = { version = "0.9.1", features = ["prost"] }
