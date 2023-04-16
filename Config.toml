@@ -1,0 +1,6 @@
+[database]
+host = "localhost"
+port = "4321"
+user = "spamvoid"
+password = "spamvoid"
+database_name = "spamvoid"
