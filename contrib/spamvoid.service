@@ -1,14 +1,12 @@
 [Unit]
 Description=Spam Void - nostr-rs-relay gRPC filter
 [Service]
-User=case
-WorkingDirectory=PATH_TO_SPAMVOID_FOLDER
-ExecStart=PATH_TO_SPAMVOID_EXECUTABLE
-SyslogIdentifier=SpamVoid
+User=spamvoid
+WorkingDirectory=/usr/local/bin
+Environment=RUST_LOG=info,spam_void=info
+ExecStart=/usr/local/bin/spam_void
 TimeoutStopSec=10
 Restart=on-failure
 RestartSec=5
 [Install]
 WantedBy=multi-user.target
-
-RUST_LOG=warn,nostr_rs_relay=info ./target/release/nostr-rs-relay

@@ -9,6 +9,7 @@ use settings::Settings;
 use tokio_postgres::NoTls;
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::{debug, info};
+use tracing_subscriber::EnvFilter;
 
 pub struct EventAuthz {
     connection_pool: bb8::Pool<PostgresConnectionManager<NoTls>>,
@@ -30,7 +31,7 @@ impl Authorization for EventAuthz {
 
         let author = hex::encode(event.pubkey);
 
-        info!(
+        debug!(
             "recvd event, [kind={}, origin={:?}, author={:?}, tag_count={}, content_sample={:?}]",
             event.kind,
             req.origin,
@@ -43,9 +44,32 @@ impl Authorization for EventAuthz {
         let conn = self.connection_pool.get().await.unwrap();
 
         // ================================
+        // Check if kind is blacklisted
+        // ================================
+        debug!("checking if kind is blacklisted [kind={}]", event.kind);
+
+        // Tokio postgres does not want unsigned integers apparently
+        let converted_event_kind: i32 = event.kind as i32;
+
+        let kind_blacklisted = conn
+            .query(
+                "SELECT EXISTS(SELECT 1 from blacklisted_kinds WHERE kind = $1)",
+                &[&converted_event_kind],
+            )
+            .await
+            .unwrap();
+        if kind_blacklisted[0].get(0) {
+            info!("event denied: blacklisted kind [kind={}]", event.kind);
+            return Ok(Response::new(nauthz_grpc::EventReply {
+                decision: Decision::Deny as i32,
+                message: Some("Event denied".to_string()),
+            }));
+        }
+
+        // ================================
         // Check if pubkey is blacklisted
         // ================================
-        debug!("checking if publick key is blacklisted [pubkey={}]", author);
+        debug!("checking if public key is blacklisted [pubkey={}]", author);
         let author_blacklisted = conn
             .query(
                 "SELECT EXISTS(SELECT 1 from blacklisted_pubkeys WHERE pubkey = $1)",
@@ -94,12 +118,7 @@ impl Authorization for EventAuthz {
 }
 
 async fn create_pool(connection_string: String) -> bb8::Pool<PostgresConnectionManager<NoTls>> {
-    let manager = PostgresConnectionManager::new(
-        connection_string
-            .parse()
-            .unwrap(),
-        NoTls,
-    );
+    let manager = PostgresConnectionManager::new(connection_string.parse().unwrap(), NoTls);
 
     bb8::Pool::builder()
         .build(manager)
@@ -113,9 +132,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // initialize settings
     let settings = Settings::new()?;
 
-    // set up tokio tracing subscriber
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber)?;
+    // set up logfile
+    let file_appender = tracing_appender::rolling::daily(
+        settings.logging.folder_path,
+        String::from("spamvoid.log"),
+    );
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+
+    let filter = EnvFilter::from_default_env();
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_writer(non_blocking)
+        .with_thread_names(true)
+        .init();
 
     // set up DB connection
     info!("Connecting to the database");
@@ -123,9 +152,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user = settings.database.user;
     let password = settings.database.password;
     let db_name = settings.database.database_name;
-    let connection_string: String = format!(
-        "host={host} user={user} password={password} dbname={db_name}"
-    );
+    let connection_string: String =
+        format!("host={host} user={user} password={password} dbname={db_name}");
     let connection_pool = create_pool(connection_string).await;
     info!("Database connected");
 

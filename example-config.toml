@@ -6,4 +6,4 @@ password = "spamvoid"
 database_name = "spamvoid"
 
 [logging]
-folder_path = "./log"
+folder_path = "/var/log/spamvoid"
