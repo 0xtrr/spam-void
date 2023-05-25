@@ -2,8 +2,12 @@
 name = "spam_void"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A GRPC filter for nostr-rs-relay nostr relay instances"
+authors = ["0xtr <oxtrr@protonmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/0xtrr/spam_void"
+repository = "https://github.com/0xtrr/spam_void"
+keywords = ["nostr", "grpc", "anti-spam"]
 
 [dependencies]
 bb8 = "0.8.0"
