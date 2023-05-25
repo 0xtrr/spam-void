@@ -1,7 +1,7 @@
 # SpamVoid
 
 ## Description
-Simple relay filter for filtering out events you don't want to store.
+Simple relay filter for filtering out events you don't want to store. With this relay filter, you can blacklist specific kinds, pubkeys and words.
 
 ## Instructions
 
