@@ -15,21 +15,6 @@ CREATE TABLE blacklisted_words (
     word TEXT NOT NULL
 );
 
--- Create the 'categories' table
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
-);
-
--- Create the 'blacklisted_words_categories' table to establish a many-to-many relationship
-CREATE TABLE blacklisted_words_categories (
-    blacklisted_word_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
-    PRIMARY KEY (blacklisted_word_id, category_id),
-    FOREIGN KEY (blacklisted_word_id) REFERENCES blacklisted_words (id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
-);
-
 -- Create the 'blacklisted_pubkeys' table
 CREATE TABLE blacklisted_pubkeys (
     id SERIAL PRIMARY KEY,
