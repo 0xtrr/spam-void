@@ -90,7 +90,7 @@ impl Authorization for EventAuthz {
         // ===============================================
         let contains_blacklisted_content = conn
             .query(
-                "SELECT EXISTS(SELECT 1 FROM blacklisted_words WHERE word = $1)",
+                "SELECT EXISTS(SELECT 1 FROM blacklisted_words WHERE $1 LIKE '%' || word || '%')",
                 &[&event.content],
             )
             .await
