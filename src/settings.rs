@@ -25,8 +25,8 @@ impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         // initialize config
         let config = Config::builder()
-            // .add_source(File::new("/etc/spamvoid/config.toml", FileFormat::Toml))
-            .add_source(File::new("./config.toml", FileFormat::Toml))
+            .add_source(File::new("/etc/spamvoid/config.toml", FileFormat::Toml))
+            // .add_source(File::new("./config.toml", FileFormat::Toml))
             .build()?;
         config.try_deserialize()
     }
